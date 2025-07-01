@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: ga4_raw
+    database: unknown-353308
+    schema: bigquery-public-data.ga4_obfuscated_sample_ecommerce
+    description: "Raw Google Analytics 4 events data exported daily to BigQuery."
+
+    tables:
+      - name: events_20210131
+        identifier: "events_20210131" # table name
+        description: "Contains all raw user interactions and associated data from GA4."
