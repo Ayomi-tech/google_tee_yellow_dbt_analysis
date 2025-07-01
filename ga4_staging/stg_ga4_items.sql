@@ -39,3 +39,4 @@ FROM
     -- Reference the 'events' table from the 'ga4_raw' source
     {{ source('ga4_raw', 'events') }} AS t,
     UNNEST(t.items) AS items
+

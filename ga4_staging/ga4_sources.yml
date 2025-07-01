@@ -10,3 +10,4 @@ sources:
       - name: events_20210131
         identifier: "events_20210131" # table name
         description: "Contains all raw user interactions and associated data from GA4."
+

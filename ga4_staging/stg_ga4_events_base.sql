@@ -45,14 +45,21 @@ SELECT
     ecommerce.unique_items AS ecommerce_unique_items,
     ecommerce.transaction_id AS ecommerce_transaction_id,
 
+    -- User LTV Information
     user_ltv.revenue AS user_ltv_revenue,
     user_ltv.currency AS user_ltv_currency,
 
+    -- Privacy Information (from privacy_info RECORD)
+    privacy_info.analytics_storage AS privacy_analytics_storage,
+    privacy_info.ads_storage AS privacy_ads_storage,
     privacy_info.uses_transient_token AS privacy_uses_transient_token,
+
+    -- Other Top-Level Fields
     user_first_touch_timestamp,
     stream_id,
-    platform
+    platform 
 
 FROM
 -- Reference the 'events' table from the 'ga4_raw' source
     {{ source('ga4_raw', 'events') }} AS t
+
