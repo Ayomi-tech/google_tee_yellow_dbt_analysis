@@ -72,8 +72,6 @@ SELECT
     SUM(CASE WHEN item_refund_usd IS NOT NULL AND item_refund_usd > 0 THEN item_refund_usd ELSE 0 END) AS total_refund_amount_usd,
     COUNT(DISTINCT CASE WHEN item_refund_usd IS NOT NULL AND item_refund_usd > 0 THEN ecommerce_transaction_id END) AS total_unique_refund_transactions
 FROM
-
-FROM
     product_data
 GROUP BY
     item_id,
