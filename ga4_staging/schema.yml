@@ -1,0 +1,347 @@
+# models/staging/ga4/schema.yml
+
+version: 2
+
+models:
+  - name: stg_ga4_events_base
+    description: "A base staging model containing flattened top-level event fields and non-repeated record fields from raw GA4 events."
+    columns:
+      - name: event_date
+        description: "The date of the event in 'YYYY-MM-DD' format. Derived from the original `event_date` string."
+        data_type: DATE
+        tests:
+          - not_null   
+      - name: event_timestamp
+        description: "The timestamp of the event in microseconds since the Unix epoch. Essential for ordering and joining."
+        data_type: INTEGER
+        tests:
+          - not_null
+      - name: event_name
+        description: "The name of the event (e.g., 'page_view', 'purchase', 'session_start')."
+        data_type: STRING
+        tests:
+          - not_null
+      - name: event_previous_timestamp
+        description: "The timestamp of the previous event in the user's session."
+        data_type: INTEGER
+      - name: event_value_in_usd
+        description: "The monetary value of the event in USD."
+        data_type: FLOAT
+      - name: event_bundle_sequence_id
+        description: "An identifier for the event bundle sequence."
+        data_type: INTEGER
+      - name: event_server_timestamp_offset
+        description: "Offset of the server timestamp from the event timestamp."
+        data_type: INTEGER
+      
+      - name: user_id
+        description: "User-provided ID for the user (if set)."
+        data_type: STRING
+      - name: user_pseudo_id
+        description: "Pseudo-anonymous client ID for the user/device. Essential for user-level analysis."
+        data_type: STRING
+        tests:
+          - not_null
+
+      # Device Information (from device RECORD) 
+      - name: device_category
+        description: "The device category (e.g., 'mobile', 'desktop', 'tablet')."
+        data_type: STRING
+      - name: device_mobile_brand_name
+        description: "The brand name of the mobile device."
+        data_type: STRING
+      - name: device_operating_system
+        description: "The operating system of the device (e.g., 'Android', 'iOS', 'Windows')."
+        data_type: STRING
+      - name: device_operating_system_version
+        description: "The version of the operating system."
+        data_type: STRING
+      - name: device_language
+        description: "The language setting of the device."
+        data_type: STRING
+      - name: device_is_limited_ad_tracking
+        description: "Indicates if ad tracking is limited on the device."
+        data_type: STRING
+      - name: device_browser
+        description: "The browser used by the device (from web_info sub-record)."
+        data_type: STRING
+      - name: device_browser_version
+        description: "The version of the browser used by the device (from device.web_info sub-record)."
+        data_type: STRING
+
+      # Geo Information (from geo RECORD)
+      - name: geo_continent
+        description: "The continent of the user's location."
+        data_type: STRING
+      - name: geo_sub_continent
+        description: "The sub-continent of the user's location."
+        data_type: STRING
+      - name: geo_country
+        description: "The country of the user's location."
+        data_type: STRING
+      - name: geo_region
+        description: "The region (state/province) of the user's location."
+        data_type: STRING
+      - name: geo_city
+        description: "The city of the user's location."
+        data_type: STRING
+      - name: geo_metro
+        description: "The metro area of the user's location."
+        data_type: STRING
+
+      # Traffic Source Information
+      - name: traffic_source_source
+        description: "The source of the traffic (e.g., 'google', 'direct', 'facebook')."
+        data_type: STRING
+      - name: traffic_source_medium
+        description: "The medium of the traffic (e.g., 'organic', 'cpc', 'referral')."
+        data_type: STRING
+      - name: traffic_source_name
+        description: "The name of the traffic source (e.g., 'campaign_name')."
+        data_type: STRING
+      - name: traffic_source_platform
+        description: "The platform of the traffic source."
+        data_type: STRING
+
+      # Ecommerce Information (from ecommerce RECORD)
+      - name: ecommerce_transaction_id
+        description: "The unique transaction identifier for purchase or refund events."
+        data_type: STRING
+        tests:
+          # This test ensures transaction_id is not null specifically for purchase events
+          - dbt_utils.not_null_where:
+              condition: "event_name = 'purchase'"
+      - name: ecommerce_total_item_quantity
+        description: "The total number of items in the ecommerce event."
+        data_type: INTEGER
+      - name: ecommerce_purchase_revenue_in_usd
+        description: "The total revenue of the purchase event in USD."
+        data_type: FLOAT
+      - name: ecommerce_refund_value_in_usd
+        description: "The total refund value of the event in USD."
+        data_type: FLOAT
+      - name: ecommerce_shipping_value_in_usd
+        description: "The shipping value of the ecommerce event in USD."
+        data_type: FLOAT
+      - name: ecommerce_tax_value_in_usd
+        description: "The tax value of the ecommerce event in USD."
+        data_type: FLOAT
+      - name: ecommerce_unique_items
+        description: "The number of unique items in the ecommerce event."
+        data_type: INTEGER
+
+      # User LTV and Privacy Info (from user_ltv)
+      - name: user_ltv_revenue
+        description: "Lifetime value revenue for the user."
+        data_type: FLOAT
+      - name: user_ltv_currency
+        description: "The currency of the user's lifetime value."
+        data_type: STRING
+
+      # Privacy Info (from privacy_info RECORD)
+      - name: privacy_analytics_storage
+        description: "Consent status for analytics storage (e.g., 1 for granted, 0 for denied)."
+        data_type: INTEGER
+      - name: privacy_ads_storage
+        description: "Consent status for advertising storage (e.g., 1 for granted, 0 for denied)."
+        data_type: INTEGER
+      - name: privacy_uses_transient_token
+        description: "Indicates if a transient token was used for privacy (e.g., 'true', 'false')."
+        data_type: STRING
+      
+      # Other Top-Level Fields
+      - name: user_first_touch_timestamp
+        description: "Timestamp of the user's first interaction."
+        data_type: INTEGER
+      - name: stream_id
+        description: "The ID of the data stream."
+        data_type: STRING
+      - name: platform
+        description: "The platform from which the event originated (e.g., 'web', 'android', 'ios')."
+        data_type: STRING
+
+
+      
+
+  - name: stg_ga4_event_params
+    description: "A flattened staging model for event parameters, with one row per parameter for each event. It includes all value types and a coalesced string value."
+    columns:
+      - name: event_date
+        description: "The date of the event in 'YYYY-MM-DD' format. Derived from the original `event_date` string."
+        data_type: DATE 
+        tests:
+          - not_null 
+      - name: event_timestamp
+        description: "Timestamp of the parent event in microseconds. Used as a foreign key to `stg_ga4_events_base`."
+        data_type: INTEGER
+        tests:
+          - not_null
+      - name: user_pseudo_id
+        description: "User pseudo ID of the parent event. Used as a foreign key to `stg_ga4_events_base`."
+        data_type: STRING
+        tests:
+          - not_null
+      - name: event_name
+        description: "Name of the parent event."
+        data_type: STRING
+        tests:
+          - not_null
+      - name: param_key
+        description: "The key of the event parameter (e.g., 'page_location', 'engagement_time_msec')."
+        data_type: STRING
+        tests:
+          - not_null
+      - name: param_value_string
+        description: "The string value of the event parameter."
+        data_type: STRING
+      - name: param_value_int
+        description: "The integer value of the event parameter."
+        data_type: INTEGER
+      - name: param_value_float
+        description: "The float value of the event parameter."
+        data_type: FLOAT
+      - name: param_value_double
+        description: "The double value of the event parameter."
+        data_type: FLOAT
+      - name: param_value_string
+        description: "The coalesced string value of the event parameter (prioritizing string, then int, then float/double)."
+        data_type: STRING
+        tests:
+          - not_null 
+
+  - name: stg_ga4_items
+    description: "A flattened staging model for ecommerce item details, with one row per item within an event."
+    columns:
+      - name: event_date
+        description: "The date of the event in 'YYYY-MM-DD' format. Derived from the original `event_date` string."
+        data_type: DATE
+        tests:
+          - not_null
+
+      - name: event_timestamp
+        description: "The timestamp of the event in microseconds since the Unix epoch. Used to link back to the base event."
+        data_type: INTEGER
+        tests:
+          - not_null
+
+      - name: event_name
+        description: "The name of the event that this item was associated with (e.g., 'view_item', 'add_to_cart', 'purchase')."
+        data_type: STRING
+        tests:
+          - not_null
+
+      - name: user_pseudo_id
+        description: "The pseudo-anonymous user identifier. Used to link back to the base event and user-level data."
+        data_type: STRING
+        tests:
+          - not_null
+
+      - name: transaction_id
+        description: "The unique transaction identifier for ecommerce events (e.g., purchase, refund). Pulled from the `ecommerce` record."
+        data_type: STRING
+        # Test for not_null specifically for purchase/refund events where a transaction_id should exist
+        tests:
+          - dbt_utils.not_null_where:
+              condition: "event_name = 'purchase'"
+
+      # Item-specific details (from `items` repeated record)
+      - name: item_id
+        description: "The unique identifier of the item (e.g., 'GGOEGXXX0905')."
+        data_type: STRING
+        tests:
+          - not_null # Items should always have an ID
+
+      - name: item_name
+        description: "The display name of the item (e.g., 'Google Tee Yellow')."
+        data_type: STRING
+
+      - name: item_brand
+        description: "The brand of the item."
+        data_type: STRING
+
+      - name: item_variant
+        description: "The variant of the item (e.g., 'red', 'large')."
+        data_type: STRING
+
+      - name: item_category
+        description: "The primary category of the item."
+        data_type: STRING
+
+      - name: item_category2
+        description: "The second level category of the item."
+        data_type: STRING
+
+      - name: item_category3
+        description: "The third level category of the item."
+        data_type: STRING
+
+      - name: item_category4
+        description: "The fourth level category of the item."
+        data_type: STRING
+
+      - name: item_category5
+        description: "The fifth level category of the item."
+        data_type: STRING
+
+      - name: item_price_usd
+        description: "The price of the item in USD."
+        data_type: FLOAT
+
+      - name: item_price_local_currency
+        description: "The price of the item in local currency."
+        data_type: FLOAT
+
+      - name: quantity
+        description: "The quantity of the item in the event (e.g., units purchased or added to cart)."
+        data_type: INTEGER
+        tests:
+          - not_null
+
+      - name: item_revenue_usd
+        description: "The revenue generated by this specific item in USD."
+        data_type: FLOAT
+
+      - name: item_revenue_local_currency
+        description: "The revenue generated by this specific item in local currency."
+        data_type: FLOAT
+
+      - name: item_refund_usd
+        description: "The refund value for this specific item in USD."
+        data_type: FLOAT
+
+      - name: item_refund_local_currency
+        description: "The refund value for this specific item in local currency."
+        data_type: FLOAT
+
+      - name: coupon
+        description: "The coupon code applied to the item."
+        data_type: STRING
+
+      - name: affiliation
+        description: "The affiliation (e.g., store or partner) associated with the item."
+        data_type: STRING
+
+      - name: discount
+        description: "The discount applied to the item."
+        data_type: FLOAT
+
+      - name: location_id
+        description: "The location ID associated with the item (e.g., store ID)."
+        data_type: STRING
+
+      - name: item_list_id
+        description: "The ID of the item list (e.g., 'search_results', 'related_products')."
+        data_type: STRING
+
+      - name: item_list_name
+        description: "The name of the item list."
+        data_type: STRING
+
+      - name: promotion_id
+        description: "The ID of the promotion applied to the item."
+        data_type: STRING
+
+      - name: promotion_name
+        description: "The name of the promotion applied to the item."
+        data_type: STRING
+
