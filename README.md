@@ -19,6 +19,8 @@ Analytical Assumptions: What underlying assumptions are necessary when conductin
 ## Methodology
 My approach involved the following key steps:
 
+Initial  Google Tee Yellow Analysis: Contains initial BigQuery SQL queries used for data extraction and preliminary analysis.
+
 Data Transformation (dbt Design & Preparation):
 
 I designed and prepared dbt models to transform the raw GA4 data into a clean, analyst-friendly format, as if connected to BigQuery. This demonstrates my ability to build a robust and maintainable data pipeline, even without direct execution access.
