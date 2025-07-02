@@ -12,9 +12,13 @@ SELECT
 
     items.item_id,
     items.item_name,
-    items.item_brand,
+    COALESCE(NULLIF(items.item_brand, '(not set)'), 'Unknown') AS item_brand, -- Normalized brand of product
     items.item_variant,
-    items.item_category,
+    CASE
+           WHEN REGEXP_CONTAINS(LOWER(items.item_category), r'(home|homme).*sale') THEN 'Home/Sale'
+           WHEN LOWER(items.item_category) = 'sale' THEN 'Sale'
+           ELSE 'Other'
+        END AS item_category, -- Primary category of the product but without the backslash 
     items.item_category2,
     items.item_category3,
     items.item_category4,
