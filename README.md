@@ -25,9 +25,9 @@ I designed and prepared dbt models to transform the raw GA4 data into a clean, a
 
 ## The dbt models include:
 
-Staging Models (stg_*): For initial cleaning and flattening of raw GA4 event and item data (e.g., stg_ga4_events_base.sql, stg_ga4_event_params.sql, stg_ga4_items.sql).
+Staging Models (stg_*): For initial cleaning and flattening of raw GA4 event and item data (e.g., ** stg_ga4_events_base.sql, stg_ga4_event_params.sql, stg_ga4_items.sql **).
 
-Mart Models (mart_*): For aggregating and preparing data into analytical marts, such as mart_google_tee_yellow_performance.sql, specifically tailored for product performance analysis.
+Mart Models (mart_*): For aggregating and preparing data into analytical marts, such as ** mart_google_tee_yellow_performance.sql **, specifically tailored for product performance analysis.
 
 Schema Definition & Testing: Utilizing schema.yml to define columns, descriptions, and ensure data quality through test definitions.
 
