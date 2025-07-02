@@ -13,8 +13,12 @@ WITH product_data AS (
         items.user_pseudo_id,
         items.item_id,
         items.item_name,
-        items.item_brand,
-        items.item_category,
+        COALESCE(NULLIF(items.item_brand, '(not set)'), 'Unknown') AS item_brand, -- Normalized brand of product
+        CASE
+           WHEN REGEXP_CONTAINS(LOWER(items.item_category), r'(home|homme).*sale') THEN 'Home/Sale'
+           WHEN LOWER(items.item_category) = 'sale' THEN 'Sale'
+           ELSE 'Other'
+        END AS item_category, -- Primary category of the product but without the backslash 
         items.quantity,
         items.item_price_usd,
         items.item_revenue_usd,
