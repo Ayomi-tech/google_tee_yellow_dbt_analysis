@@ -23,7 +23,7 @@ Data Transformation (dbt Design & Preparation):
 
 I designed and prepared dbt models to transform the raw GA4 data into a clean, analyst-friendly format, as if connected to BigQuery. This demonstrates my ability to build a robust and maintainable data pipeline, even without direct execution access.
 
-##The dbt models include:
+## The dbt models include:
 
 Staging Models (stg_*): For initial cleaning and flattening of raw GA4 event and item data (e.g., stg_ga4_events_base.sql, stg_ga4_event_params.sql, stg_ga4_items.sql).
 
